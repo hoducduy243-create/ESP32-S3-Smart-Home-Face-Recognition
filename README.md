@@ -1,18 +1,28 @@
 # ESP32-S3 Smart Home Face Recognition
 
+## Project Overview
+
+This project presents a face recognition access control system using ESP32-S3, ESP32-CAM, and a Python-based server. The system integrates dual-camera image capture, ESP-NOW communication, face recognition, relay control, and a web-based monitoring dashboard.
+
 **Hệ thống kiểm soát ra vào bằng nhận diện khuôn mặt với ESP32-S3, ESP32-CAM và server Python.**
 
 Dự án kết hợp firmware nhúng, giao tiếp không dây và thị giác máy tính để thực hiện một luồng hoàn chỉnh: phát hiện chuyển động → chụp ảnh từ hai góc → xác thực khuôn mặt → điều khiển relay → lưu kết quả trên dashboard.
 
 ESP32-S3 là bộ điều khiển chính, ESP32-CAM bổ sung góc chụp thứ hai. Việc phát hiện và đối chiếu khuôn mặt chạy trên **server Python**, còn các bo ESP32 đảm nhiệm thu ảnh, giao tiếp và điều khiển phần cứng.
 
-[Kiến trúc](#kiến-trúc-hệ-thống) · [Chức năng](#chức-năng-chính) · [Đấu nối](#đấu-nối-phần-cứng) · [Cách lấy IP](#31-lấy-ipv4-của-máy-chạy-server) · [Cách chạy](#hướng-dẫn-chạy) · [Kiểm thử](#kiểm-thử)
+[Công việc cá nhân](#my-contributions--công-việc-cá-nhân) · [Kiến trúc](#kiến-trúc-hệ-thống) · [Chức năng](#chức-năng-chính) · [Đấu nối](#đấu-nối-phần-cứng) · [Cách lấy IP](#31-lấy-ipv4-của-máy-chạy-server) · [Cách chạy](#hướng-dẫn-chạy) · [Kiểm thử](#kiểm-thử)
 
 ## Mục tiêu dự án
 
 - Xây dựng mô hình kiểm soát cửa bằng khuôn mặt, có màn hình hướng dẫn tại thiết bị và giao diện quản trị trên trình duyệt.
 - Kết hợp hai camera để bổ sung góc quan sát; Master vẫn có thể xác thực khi Slave không tham gia phiên chụp.
 - Tách firmware, xử lý nhận diện và quản lý dữ liệu thành các phần có thể kiểm thử, theo dõi và mở rộng độc lập.
+
+## My Contributions – Công việc cá nhân
+
+- **Thiết kế phần cứng:** Vẽ sơ đồ nguyên lý (Schematic), thiết kế PCB bằng Altium Designer, bố trí linh kiện và đi dây mạch điện.
+- **Tích hợp hệ thống nhúng:** Kết nối và cấu hình ESP32-S3, ESP32-CAM cùng các thiết bị ngoại vi.
+- **Kiểm thử và xử lý lỗi:** Kiểm tra kết nối phần cứng, theo dõi UART Log và khắc phục lỗi trong quá trình vận hành hệ thống.
 
 ## Kiến trúc hệ thống
 
