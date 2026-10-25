@@ -6,6 +6,8 @@ sdkconfig.old
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.venv/
+venv/
 .ui-preview/
 /recovery-backups/
 /project_network.local.h
