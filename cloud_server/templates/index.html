@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#15243f">
+  <title>Smart Access · Trung tâm quản lý</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='dashboard.css') }}?v={{ static_version|default('samples-v2') }}">
+  <script src="{{ url_for('static', path='dashboard.js') }}?v={{ static_version|default('samples-v2') }}" defer></script>
+</head>
+<body>
+  {% macro icon(name, cls='') -%}
+  <svg class="icon {{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"></use></svg>
+  {%- endmacro %}
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M16 4a4 4 0 0 1 0 8m2 3a6 6 0 0 1 4 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="m8 6 2-3h4l2 3"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 14 6M4 12a8 8 0 0 0 14 6"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M12 6.5h5M12 17.5h5"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 4H4v16h5m0-8h12m-4-4 4 4-4 4"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M2 12h20"/><path d="M8 8h.01M16 8h.01m-8 8c2 2 6 2 8 0"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+  </svg>
+  <a class="skip-link" href="#main-content">Đi đến nội dung chính</a>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Điều hướng chính">
+      <a class="brand" href="#home"><span class="brand-mark">{{ icon('scan') }}</span><span>Smart Access<small>TRUNG TÂM QUẢN LÝ</small></span></a>
+      <p class="nav-label">KHÔNG GIAN LÀM VIỆC</p>
+      <nav class="navigation">
+        <button type="button" class="nav active" data-view="home" aria-current="page">{{ icon('grid') }}<span>Tổng quan</span></button>
+        <button type="button" class="nav" data-view="users">{{ icon('users') }}<span>Quản lý người dùng</span><span class="nav-count" data-user-count>{{ users|length }}</span></button>
+        <button type="button" class="nav" data-view="history">{{ icon('clock') }}<span>Nhật ký nhận diện</span></button>
+        <button type="button" class="nav" data-view="system">{{ icon('activity') }}<span>Nhật ký kết nối</span></button>
+        <button type="button" class="nav" data-view="settings">{{ icon('settings') }}<span>Cài đặt hệ thống</span></button>
+      </nav>
+      <div class="sidebar-note">{{ icon('shield') }}<strong>Kiểm soát ra vào thông minh</strong><p>Nhận diện khuôn mặt với hai camera Master &amp; Slave.</p><span class="sidebar-chip">ESP32 · Face Recognition</span></div>
+      <div class="sidebar-footer"><span class="avatar-letter">A</span><div><strong>Quản trị viên</strong><small>Quản lý hệ thống</small></div></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <div class="breadcrumb">Không gian quản lý <span>/</span> <strong id="breadcrumb-view">Tổng quan</strong></div>
+        <div class="topbar-actions"><span id="server-badge" class="pill neutral">Đang kết nối</span><span class="admin-label">Quản trị viên</span><form action="/logout" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-ghost" type="submit" aria-label="Đăng xuất">{{ icon('logout') }}<span>Đăng xuất</span></button></form></div>
+      </header>
+      <main id="main-content" tabindex="-1">
+        <div id="sync-error" class="notice notice-warning" role="status" hidden></div>
+        <section id="view-home" class="view">
+          <div class="page-heading"><div><p class="eyebrow">SMART ACCESS / DASHBOARD</p><h1>Tổng quan hệ thống</h1><p class="subtitle">Theo dõi nhận diện, kết nối thiết bị và quản lý quyền ra vào.</p></div><button type="button" class="btn btn-primary" data-quick="register">{{ icon('plus') }}Thêm người dùng</button></div>
+          <div class="metrics" aria-label="Thống kê nhật ký đang lưu trên hệ thống">
+            <article class="metric metric-blue"><div class="metric-top"><span>Tổng lượt nhận diện</span><span class="metric-icon">{{ icon('scan') }}</span></div><strong id="stat-total">{{ total_access }}</strong><small>Toàn bộ nhật ký đang lưu</small></article>
+            <article class="metric metric-teal"><div class="metric-top"><span>Được phép ra vào</span><span class="metric-icon">{{ icon('check') }}</span></div><strong id="stat-unlocked">{{ unlocked_count }}</strong><small>Nhận diện được chấp thuận</small></article>
+            <article class="metric metric-rose"><div class="metric-top"><span>Bị từ chối</span><span class="metric-icon">{{ icon('shield') }}</span></div><strong id="stat-denied">{{ denied_count }}</strong><small>Cần kiểm tra khi có bất thường</small></article>
+            <article class="metric metric-violet"><div class="metric-top"><span>Người dùng đã đăng ký</span><span class="metric-icon">{{ icon('users') }}</span></div><strong id="stat-users" data-user-count>{{ users|length }}</strong><small>Hồ sơ trong hệ thống</small></article>
+          </div>
+          <div class="overview-grid">
+            <section class="panel monitoring-panel"><div class="panel-heading"><div><h2>{{ icon('camera') }}Giám sát camera</h2><p>Ảnh chụp của phiên nhận diện gần nhất</p></div><span class="pill neutral">2 thiết bị</span></div><div class="camera-grid">
+              {% for camera, label, model in [('master', 'Camera Master', 'ESP32-S3'), ('slave', 'Camera Slave', 'ESP32-CAM')] %}
+              <article class="camera-card"><div class="camera-heading"><div><strong>{{ label }}</strong><small>{{ model }}</small></div><span class="pill neutral" id="{{ camera }}-label">Chưa có ảnh</span></div><div class="camera-frame" id="{{ camera }}-camera"><div class="camera-placeholder">{{ icon('camera') }}<strong>Đang chờ ảnh nhận diện</strong><span>Ảnh sẽ xuất hiện sau khi thiết bị gửi dữ liệu</span></div></div><div class="camera-footer"><span class="status-text unknown" id="{{ camera }}-status">Đang kiểm tra kết nối</span><span class="snapshot-label">Ảnh chụp</span></div></article>
+              {% endfor %}
+            </div><p class="panel-footnote">{{ icon('info') }}Chỉ cần Master hoặc Slave xác thực đạt là mở cửa. Mỗi camera cần ít nhất 2 ảnh khớp cùng người. Ảnh hiển thị là ảnh đại diện của phiên; bấm để xem lớn.</p></section>
+            <section class="panel recognition-panel"><div class="panel-heading"><div><h2>{{ icon('scan') }}Nhận diện gần nhất</h2><p>Kết quả kiểm soát ra vào</p></div></div><div id="latest-result" class="result result-empty">{{ icon('scan') }}<strong>Chưa có lượt nhận diện</strong><p>Kết quả sẽ tự cập nhật khi có sự kiện mới.</p></div></section>
+          </div>
+          <section class="quick-section" aria-label="Thao tác nhanh"><div class="section-heading"><h2>Thao tác nhanh</h2><span>Mở ngay trong cửa sổ hiện tại</span></div><div class="quick-grid">
+            <button type="button" class="quick-action quick-teal" data-quick="register"><span class="quick-icon">{{ icon('plus') }}</span><span><strong>Thêm người dùng</strong><small>Đăng ký khuôn mặt mới</small></span>{{ icon('arrow', 'quick-arrow') }}</button>
+            <button type="button" class="quick-action quick-blue" data-quick="users"><span class="quick-icon">{{ icon('users') }}</span><span><strong>Quản lý người dùng</strong><small>Tìm kiếm và quản lý hồ sơ</small></span>{{ icon('arrow', 'quick-arrow') }}</button>
+            <button type="button" class="quick-action quick-violet" data-quick="history"><span class="quick-icon">{{ icon('clock') }}</span><span><strong>Nhật ký nhận diện</strong><small>Tra cứu các lượt ra vào</small></span>{{ icon('arrow', 'quick-arrow') }}</button>
+            <button type="button" class="quick-action quick-amber" data-quick="settings"><span class="quick-icon">{{ icon('settings') }}</span><span><strong>Cài đặt hệ thống</strong><small>Thông tin cấu hình hiện tại</small></span>{{ icon('arrow', 'quick-arrow') }}</button>
+          </div></section>
+          <div class="lower-grid">
+            <section class="panel"><div class="panel-heading"><div><h2>{{ icon('clock') }}Hoạt động gần đây</h2><p>5 lượt nhận diện mới nhất</p></div><button class="btn btn-ghost" type="button" data-quick="history">Xem tất cả {{ icon('arrow') }}</button></div><div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Người dùng</th><th>Kết quả</th><th>Điểm tương đồng</th></tr></thead><tbody id="recent-logs"><tr><td colspan="4" class="empty">Đang tải nhật ký nhận diện…</td></tr></tbody></table></div></section>
+            <section class="panel device-panel"><div class="panel-heading"><div><h2>{{ icon('server') }}Kết nối thiết bị</h2><p>Trạng thái từ tín hiệu Heartbeat</p></div><span class="pill neutral" id="device-count">— / 2</span></div>
+              <div class="device-row"><span class="device-icon">{{ icon('camera') }}</span><div><strong>ESP32-S3 Master</strong><small id="master-last-seen">Chưa có dữ liệu gửi ảnh</small></div><span id="master-device-status" class="pill neutral">Đang kiểm tra</span></div>
+              <div class="device-row"><span class="device-icon">{{ icon('camera') }}</span><div><strong>ESP32-CAM Slave</strong><small id="slave-last-seen">Chưa có dữ liệu gửi ảnh</small></div><span id="slave-device-status" class="pill neutral">Đang kiểm tra</span></div>
+              <div class="device-row"><span class="device-icon">{{ icon('server') }}</span><div><strong>Server nhận diện</strong><small id="last-sync">Đang đồng bộ dữ liệu</small></div><span id="server-device-status" class="pill neutral">Đang kết nối</span></div>
+              <button type="button" class="text-button" data-view="system">Xem nhật ký kết nối {{ icon('arrow') }}</button>
+            </section>
+          </div>
+        </section>
+        <section id="view-users" class="view" hidden><div id="users-content" class="view-content">
+          <div class="page-heading"><div><p class="eyebrow">QUẢN LÝ HỒ SƠ</p><h1>Người dùng</h1><p class="subtitle">Đăng ký khuôn mặt và quản lý danh sách người được phép ra vào.</p></div><button type="button" class="btn btn-primary" data-quick="register">{{ icon('plus') }}Thêm người dùng</button></div>
+          <section class="panel"><div class="panel-heading"><h2>Danh sách người dùng <span class="count-badge" data-user-count>{{ users|length }}</span></h2><span id="user-result-count" class="muted"></span></div><div class="filter-bar"><div class="search-field">{{ icon('search') }}<label class="sr-only" for="user-search">Tìm theo tên hoặc mã người dùng</label><input id="user-search" type="search" placeholder="Tìm theo tên hoặc mã người dùng…" autocomplete="off"></div></div><div class="table-wrap"><table><thead><tr><th>Người dùng</th><th>Mã người dùng</th><th>Vai trò</th><th class="align-right">Thao tác</th></tr></thead><tbody id="user-rows">
+            {% for u in users %}<tr class="user-row" data-user-id="{{ u.id }}" data-name="{{ u.name|e }}" data-code="{{ u.user_code|e }}"><td><div class="person-cell"><img class="avatar" src="{{ u.avatar_path|e }}" alt="Ảnh của {{ u.name|e }}" loading="lazy"><div><strong>{{ u.name }}</strong><small>Hồ sơ khuôn mặt</small></div></div></td><td><span class="code-label">{{ u.user_code }}</span></td><td><span class="role-pill">{{ u.role }}</span></td><td class="align-right"><button type="button" class="btn btn-secondary" data-add-samples="{{ u.id }}" data-name="{{ u.name|e }}">Bổ sung ảnh</button> <button type="button" class="btn btn-danger-soft" data-delete-user="{{ u.id }}" data-name="{{ u.name|e }}" aria-label="Xóa người dùng {{ u.name|e }}">{{ icon('trash') }}Xóa</button></td></tr>{% endfor %}
+            <tr id="user-empty" {% if users %}hidden{% endif %}><td colspan="4" class="empty">Chưa có người dùng. Thêm hồ sơ đầu tiên để bắt đầu.</td></tr>
+          </tbody></table></div></section>
+        </div></section>
+        <section id="view-history" class="view" hidden><div id="history-content" class="view-content">
+          <div class="page-heading"><div><p class="eyebrow">KIỂM SOÁT RA VÀO</p><h1>Nhật ký nhận diện</h1><p class="subtitle">Tra cứu kết quả nhận diện khuôn mặt và ảnh đối chiếu từ hai camera.</p></div><span class="page-badge">50 sự kiện gần nhất</span></div>
+          <section class="panel"><div class="filter-bar"><div class="search-field">{{ icon('search') }}<label class="sr-only" for="history-search">Tìm nhật ký theo tên người dùng</label><input id="history-search" type="search" placeholder="Tìm theo tên người dùng, có dấu hoặc không dấu…" autocomplete="off"></div><div class="select-field"><label for="history-status">Kết quả</label><select id="history-status"><option value="all">Tất cả kết quả</option><option value="UNLOCK">Cho phép</option><option value="DENIED">Từ chối</option></select></div><button type="button" class="btn btn-secondary" id="history-refresh">{{ icon('refresh') }}Làm mới</button></div><div class="table-caption"><span id="history-count" role="status">Đang tải dữ liệu…</span><span>Bộ lọc áp dụng cho 50 sự kiện gần nhất</span></div><div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Người dùng</th><th>Kết quả</th><th title="Điểm tương đồng cosine của SFace, không phải xác suất">Điểm tương đồng</th><th>Ảnh Master / Slave</th><th>Chi tiết</th></tr></thead><tbody id="full-logs"><tr><td colspan="6" class="empty">Đang tải nhật ký nhận diện…</td></tr></tbody></table></div></section>
+        </div></section>
+        <section id="view-system" class="view" hidden><div id="system-content" class="view-content">
+          <div class="page-heading"><div><p class="eyebrow">THEO DÕI VẬN HÀNH</p><h1>Nhật ký kết nối</h1><p class="subtitle">Kiểm tra trạng thái thiết bị và các lần thay đổi kết nối.</p></div><span class="pill neutral" id="server-health">Đang kết nối</span></div>
+          <div class="connection-summary"><article class="panel connection-card"><span class="device-icon">{{ icon('camera') }}</span><div><small>ESP32-S3 Master</small><strong id="system-master" class="status-text unknown">Đang kiểm tra</strong><p>Trạng thái kết nối qua Heartbeat</p></div></article><article class="panel connection-card"><span class="device-icon">{{ icon('camera') }}</span><div><small>ESP32-CAM Slave</small><strong id="system-slave" class="status-text unknown">Đang kiểm tra</strong><p>Trạng thái kết nối qua Heartbeat</p></div></article></div>
+          <section class="panel"><div class="panel-heading"><h2>Thay đổi trạng thái thiết bị</h2><span id="connection-count" class="muted">Đang tải…</span></div><div class="filter-bar"><div class="select-field"><label for="connection-filter">Thiết bị</label><select id="connection-filter"><option value="all">Tất cả camera</option><option value="master">ESP32-S3 Master</option><option value="slave">ESP32-CAM Slave</option></select></div><button type="button" class="btn btn-secondary" id="connection-refresh">{{ icon('refresh') }}Làm mới</button><span class="filter-note" id="connection-last-refresh">Tự cập nhật mỗi 3 giây</span></div><div id="connection-error" class="notice notice-warning" role="status" hidden></div><div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Thiết bị</th><th>Sự kiện</th><th>Chi tiết</th></tr></thead><tbody id="connection-rows"><tr><td colspan="4" class="empty">Đang tải lịch sử kết nối…</td></tr></tbody></table></div><p class="panel-footnote">{{ icon('info') }}Ghi nhận khi thiết bị thay đổi trạng thái, không tạo một sự kiện cho mỗi Heartbeat.</p></section>
+        </div></section>
+        <section id="view-settings" class="view" hidden><div id="settings-content" class="view-content">
+          <div class="page-heading"><div><p class="eyebrow">THÔNG TIN HỆ THỐNG</p><h1>Cài đặt hệ thống</h1><p class="subtitle">Thông tin nền tảng nhận diện và cấu hình thiết bị.</p></div><span class="page-badge">Chỉ xem</span></div>
+          <section class="panel"><div class="panel-heading"><h2>{{ icon('settings') }}Cấu hình hiện tại</h2></div><div class="settings-grid"><div><span>Phát hiện khuôn mặt</span><strong>OpenCV YuNet</strong></div><div><span>Đối chiếu khuôn mặt</span><strong>OpenCV SFace</strong></div><div><span>Camera chính</span><strong>ESP32-S3 Master</strong></div><div><span>Camera phụ</span><strong>ESP32-CAM Slave</strong></div><div><span>Đồng bộ giao diện</span><strong>Mỗi 3 giây</strong></div><div><span>Kho dữ liệu</span><strong>SQLite</strong></div></div><div class="notice notice-info">{{ icon('info') }}<div>Thông số nhận diện và cấu hình thiết bị được quản lý trong Server và firmware. Hệ thống hiện chưa hỗ trợ lưu cấu hình qua giao diện.</div></div></section>
+        </div></section>
+        <footer class="main-footer"><span>Smart Access · Hệ thống quản lý nhận diện khuôn mặt</span><span>Master + Slave</span></footer>
+      </main>
+    </div>
+  </div>
+  <dialog id="workspace-dialog" class="modal modal-wide" aria-labelledby="workspace-dialog-title"><div class="modal-heading"><div><p class="eyebrow">THAO TÁC NHANH</p><h2 id="workspace-dialog-title">Quản lý</h2></div><button type="button" class="icon-button" data-close-dialog aria-label="Đóng cửa sổ">{{ icon('close') }}</button></div><div id="workspace-dialog-body" class="modal-body"></div></dialog>
+  <dialog id="register-dialog" class="modal" aria-labelledby="register-title"><div class="modal-heading"><div><p class="eyebrow">HỒ SƠ KHUÔN MẶT</p><h2 id="register-title">Thêm người dùng</h2></div><button type="button" class="icon-button" data-close-dialog aria-label="Đóng đăng ký">{{ icon('close') }}</button></div><div class="modal-body"><p class="subtitle">Đăng ký thông tin và ảnh khuôn mặt để nhận diện khi ra vào.</p><div id="register-alert" class="notice" role="status" hidden></div><form id="register-form" action="/api/users/add" method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid"><label class="form-field">Họ và tên <span class="required">*</span><input type="text" name="name" required maxlength="100" placeholder="Nguyễn Văn An" autocomplete="name"></label><label class="form-field">Mã người dùng <span class="required">*</span><input type="text" name="user_code" required maxlength="64" placeholder="VD: USER_001" autocomplete="off"></label><label class="form-field wide">Vai trò<select name="role"><option>Thành viên</option><option>Chủ nhà</option><option>Khách VIP</option></select></label><label class="form-field wide">Ảnh khuôn mặt <span class="required">*</span><span class="upload-zone">{{ icon('camera') }}<strong>Chọn ảnh khuôn mặt</strong><span>Ảnh không khẩu trang, rõ nét, đủ sáng, một người</span><input type="file" name="avatar" accept="image/*" required></span></label><label class="form-field wide">Ảnh không khẩu trang bổ sung<input type="file" name="photos" accept="image/*" multiple><small>Chính diện, nghiêng nhẹ trái/phải. Mỗi ảnh chỉ một người.</small></label><label class="form-field wide">Ảnh có khẩu trang<input type="file" name="masked_photos" accept="image/*" multiple><small>Để lộ hai mắt, dùng khẩu trang thực tế. Tối đa 20 ảnh tổng cộng; chỉ chọn ảnh đúng người đăng ký.</small></label></div><div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-dialog>Hủy</button><button type="submit" class="btn btn-primary" id="register-submit">{{ icon('plus') }}Đăng ký người dùng</button></div></form></div></dialog>
+  <dialog id="samples-dialog" class="modal" aria-labelledby="samples-title">
+    <div class="modal-heading"><h2 id="samples-title">Bổ sung ảnh nhận diện</h2><button type="button" class="icon-button" data-close-dialog aria-label="Đóng">{{ icon('close') }}</button></div>
+    <div class="modal-body"><p id="samples-description" class="subtitle"></p>
+      <p class="subtitle">Chọn ảnh đúng người đã đăng ký: 3–5 ảnh mỗi loại, chính diện và nghiêng nhẹ, đủ sáng. Mỗi hồ sơ tối đa 20 mẫu. Ảnh bị mờ, quá nhỏ hoặc có nhiều người sẽ bị từ chối.</p>
+      <div id="samples-alert" class="notice" role="status" hidden></div>
+      <form id="samples-form-unmasked" class="samples-group" data-sample-mode="unmasked" method="POST" enctype="multipart/form-data" aria-labelledby="samples-unmasked-title">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="mode" value="unmasked">
+        <h3 id="samples-unmasked-title">Không khẩu trang</h3>
+        <p id="samples-count-unmasked" class="muted" aria-live="polite">Đang tải số ảnh đã lưu…</p>
+        <label class="form-field">Chọn ảnh không khẩu trang<input type="file" name="photos" accept="image/*" multiple required></label>
+        <div id="samples-alert-unmasked" class="notice" role="status" hidden></div>
+        <div class="modal-actions"><button id="samples-submit-unmasked" type="submit" class="btn btn-primary">Lưu ảnh không khẩu trang</button></div>
+      </form>
+      <form id="samples-form-masked" class="samples-group" data-sample-mode="masked" method="POST" enctype="multipart/form-data" aria-labelledby="samples-masked-title">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="mode" value="masked">
+        <h3 id="samples-masked-title">Có khẩu trang</h3>
+        <p id="samples-count-masked" class="muted" aria-live="polite">Đang tải số ảnh đã lưu…</p>
+        <label class="form-field">Chọn ảnh có khẩu trang<input type="file" name="photos" accept="image/*" multiple required></label>
+        <div id="samples-alert-masked" class="notice" role="status" hidden></div>
+        <div class="modal-actions"><button id="samples-submit-masked" type="submit" class="btn btn-primary">Lưu ảnh có khẩu trang</button></div>
+      </form>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-dialog>Đóng</button></div>
+    </div>
+  </dialog>
+  <dialog id="delete-dialog" class="modal modal-small" aria-labelledby="delete-title"><div class="modal-heading"><h2 id="delete-title">Xóa người dùng?</h2><button type="button" class="icon-button" data-close-dialog aria-label="Đóng xác nhận">{{ icon('close') }}</button></div><div class="modal-body"><p id="delete-description"></p><p class="subtitle">Người dùng sẽ được gỡ khỏi danh sách được phép ra vào.</p><div id="delete-error" class="notice notice-warning" role="status" hidden></div><form id="delete-form" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-dialog autofocus>Hủy</button><button type="submit" class="btn btn-danger" id="delete-submit">Xóa người dùng</button></div></form></div></dialog>
+  <dialog id="image-dialog" class="modal modal-image" aria-labelledby="image-dialog-title"><div class="modal-heading"><h2 id="image-dialog-title">Ảnh nhận diện</h2><button type="button" class="icon-button" data-close-dialog aria-label="Đóng ảnh">{{ icon('close') }}</button></div><div id="image-dialog-body" class="modal-body"></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

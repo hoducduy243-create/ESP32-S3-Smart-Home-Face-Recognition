@@ -1,0 +1,16 @@
+{
+  "gallery": [
+    {
+      "id": 1,
+      "name": "Nguoi thu nghiem",
+      "unmasked": ["enroll/front.jpg", "enroll/left.jpg", "enroll/right.jpg"],
+      "masked": ["enroll/mask_front.jpg", "enroll/mask_left.jpg", "enroll/mask_right.jpg"]
+    }
+  ],
+  "probes": [
+    {"session": "masked_known", "camera": "master", "frame_index": 0, "path": "test/masked_1.jpg", "expected_user_id": 1},
+    {"session": "masked_known", "camera": "master", "frame_index": 1, "path": "test/masked_2.jpg", "expected_user_id": 1},
+    {"session": "unknown", "camera": "master", "frame_index": 0, "path": "test/unknown_1.jpg", "expected_user_id": null},
+    {"session": "unknown", "camera": "master", "frame_index": 1, "path": "test/unknown_2.jpg", "expected_user_id": null}
+  ]
+}

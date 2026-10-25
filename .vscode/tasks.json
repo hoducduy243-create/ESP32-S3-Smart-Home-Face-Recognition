@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ESP-IDF: Build Master",
+      "type": "process",
+      "command": "${env:ComSpec}",
+      "args": [
+        "/d",
+        "/c",
+        "call C:\\Espressif\\frameworks\\esp-idf-v5.5\\export.bat && C:\\Espressif\\python_env\\idf5.5_py3.11_env\\Scripts\\python.exe C:\\Espressif\\frameworks\\esp-idf-v5.5\\tools\\idf.py build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/master_esp32s3",
+        "env": {
+          "IDF_TOOLS_PATH": "C:\\Espressif",
+          "IDF_PYTHON_ENV_PATH": "C:\\Espressif\\python_env\\idf5.5_py3.11_env",
+          "PATH": "C:\\Espressif\\python_env\\idf5.5_py3.11_env\\Scripts;${env:PATH}"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "ESP-IDF: Flash and Monitor Master (COM3)",
+      "type": "process",
+      "command": "${env:ComSpec}",
+      "args": [
+        "/d",
+        "/c",
+        "call C:\\Espressif\\frameworks\\esp-idf-v5.5\\export.bat && C:\\Espressif\\python_env\\idf5.5_py3.11_env\\Scripts\\python.exe C:\\Espressif\\frameworks\\esp-idf-v5.5\\tools\\idf.py -p COM3 flash monitor"
+      ],
+      "dependsOn": "ESP-IDF: Build Master",
+      "dependsOrder": "sequence",
+      "options": {
+        "cwd": "${workspaceFolder}/master_esp32s3",
+        "env": {
+          "IDF_TOOLS_PATH": "C:\\Espressif",
+          "IDF_PYTHON_ENV_PATH": "C:\\Espressif\\python_env\\idf5.5_py3.11_env",
+          "PATH": "C:\\Espressif\\python_env\\idf5.5_py3.11_env\\Scripts;${env:PATH}"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

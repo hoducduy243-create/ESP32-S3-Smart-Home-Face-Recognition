@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111c35">
+  <title>Đăng nhập | Smart Access</title>
+  <style>
+    :root { color-scheme: light; --ink: #17243d; --muted: #69768c; --line: #dee5f0; --gradient: linear-gradient(115deg, #14b8a6, #3478f6 54%, #8b5cf6); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 40px 24px; color: var(--ink); background: radial-gradient(ellipse at 8% 5%, #d9f4ef 0, transparent 44%), radial-gradient(ellipse at 96% 96%, #e6defb 0, transparent 45%), #f1f5fb; font-family: "Segoe UI", Arial, sans-serif; font-size: 15px; line-height: 1.6; }
+    button, input { font: inherit; }
+    svg { display: block; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .login-shell { width: min(1040px, 100%); display: grid; grid-template-columns: 1.07fr 1fr; border: 1px solid #fff; border-radius: 28px; overflow: hidden; background: white; box-shadow: 0 28px 80px #20355c14, 0 4px 18px #20355c08; }
+    .brand-panel { position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 46px; color: #fff; background: radial-gradient(ellipse at 0 100%, #0c827653, transparent 58%), radial-gradient(ellipse at 100% 0, #7854b352, transparent 65%), #111c35; }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; letter-spacing: -.5px; }
+    .brand-icon { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 13px; background: var(--gradient); box-shadow: 0 6px 20px #3478f633; }
+    .brand-copy { position: relative; z-index: 1; margin-top: 46px; }
+    .eyebrow { margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .brand-copy .eyebrow { color: #91deed; }
+    .brand-copy h1 { margin: 0; font-size: clamp(30px, 3vw, 39px); line-height: 1.25; letter-spacing: -1.3px; font-weight: 700; }
+    .brand-copy p:last-child { margin: 18px 0 0; color: #b8c6df; font-size: 14px; }
+    .scan-visual { position: relative; display: grid; place-items: center; height: 220px; width: 100%; margin: 20px 0 22px; }
+    .scan-ring { position: absolute; width: 196px; height: 196px; border: 1px solid #71ceef27; border-radius: 50%; box-shadow: 0 0 0 27px #65c9e708, 0 0 0 54px #65c9e705; }
+    .scan-frame { position: relative; display: grid; place-items: center; width: 138px; height: 160px; border: 1px solid #6bc6e53b; border-radius: 24px; background: linear-gradient(145deg, #14b8a620, #3478f61a 58%, #8b5cf626); box-shadow: 0 16px 40px #050b1929; }
+    .scan-frame svg { width: 80px; height: 80px; color: #a7daee; stroke-width: 1.1; }
+    .scan-line { position: absolute; left: -15px; right: -15px; top: 87px; height: 1px; background: linear-gradient(90deg, transparent, #72f1dc, #77b6ff, transparent); box-shadow: 0 0 16px #54d3d880; }
+    .scan-point { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #76e5d3; box-shadow: 0 0 0 5px #76e5d316; }
+    .scan-point.first { top: 47px; left: 41px; }
+    .scan-point.second { bottom: 35px; right: 54px; background: #a78bfa; box-shadow: 0 0 0 5px #a78bfa16; }
+    .features { display: flex; flex-wrap: wrap; gap: 9px; margin-top: auto; }
+    .feature { display: flex; align-items: center; gap: 7px; border: 1px solid #bbd1f21e; border-radius: 9px; padding: 7px 10px; color: #d2ddf0; font-size: 11px; background: #b6d0fb08; }
+    .feature svg { width: 15px; height: 15px; color: #87ded0; }
+    .form-panel { padding: 60px 50px 38px; display: flex; flex-direction: column; justify-content: center; }
+    .form-panel .eyebrow { color: #5075c6; margin-bottom: 9px; }
+    h2 { margin: 0; font-size: 30px; line-height: 1.3; letter-spacing: -.9px; }
+    .intro { color: var(--muted); font-size: 14px; margin: 12px 0 30px; }
+    label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+    .field { margin-bottom: 20px; }
+    .input-wrap { position: relative; }
+    .input-wrap svg { position: absolute; left: 14px; top: 16px; width: 19px; height: 19px; color: #8390a6; pointer-events: none; }
+    input { display: block; width: 100%; min-height: 52px; border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px 12px 43px; color: var(--ink); background: #f9fbfe; transition: border-color .15s, box-shadow .15s; }
+    input::placeholder { color: #95a0b2; }
+    input:focus-visible { border-color: #3478f6; outline: 2px solid #3478f6; outline-offset: 2px; background: white; }
+    .submit { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; min-height: 52px; margin-top: 28px; border: 0; border-radius: 11px; color: white; background: var(--gradient); font-weight: 600; cursor: pointer; box-shadow: 0 8px 20px #3478f622; transition: box-shadow .15s, transform .15s; }
+    .submit svg { width: 19px; height: 19px; }
+    .submit:hover { box-shadow: 0 10px 24px #3478f638; transform: translateY(-1px); }
+    .submit:focus-visible { outline: 3px solid #3478f6; outline-offset: 4px; }
+    .error { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; margin: 0 0 22px; border: 1px solid #f2c9d0; border-radius: 10px; background: #fff2f4; color: #ab3049; font-size: 13px; overflow-wrap: anywhere; }
+    .error svg { width: 19px; height: 19px; flex: 0 0 19px; margin-top: 1px; }
+    .security-note { display: flex; align-items: flex-start; justify-content: center; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.6; margin-top: 24px; }
+    .security-note svg { width: 16px; height: 16px; flex: 0 0 16px; margin-top: 1px; }
+    .footer { border-top: 1px solid #edf0f5; margin-top: 38px; padding-top: 18px; font-size: 11px; text-align: center; color: #8490a4; }
+    @media (max-width: 850px) { .brand-panel { padding: 34px; } .form-panel { padding: 42px 30px 30px; } .brand-copy h1 { font-size: 30px; } }
+    @media (max-width: 650px) { body { padding: 20px 14px; } .login-shell { grid-template-columns: 1fr; border-radius: 22px; } .brand-panel { padding: 26px; } .brand-copy { margin-top: 24px; } .brand-copy h1 { font-size: 27px; letter-spacing: -.7px; } .brand-copy p:last-child { margin-top: 12px; } .scan-visual { display: none; } .features { margin-top: 22px; } .form-panel { padding: 30px 26px 24px; } h2 { font-size: 27px; } .intro { margin-bottom: 25px; } .footer { margin-top: 26px; } }
+    @media (prefers-reduced-motion: reduce) { input, .submit { transition: none; } .submit:hover { transform: none; } }
+  </style>
+</head>
+<body>
+  <main class="login-shell">
+    <section class="brand-panel" aria-label="Smart Access">
+      <div class="brand"><span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span>Smart Access</div>
+      <div class="brand-copy"><p class="eyebrow">Kiểm soát ra vào</p><h1>Quản lý tập trung.<br>Nhận diện thông minh.</h1><p>Theo dõi nhận diện khuôn mặt, quản lý người dùng và trạng thái hai camera trong một không gian.</p></div>
+      <div class="scan-visual" aria-hidden="true"><span class="scan-ring"></span><span class="scan-point first"></span><div class="scan-frame"><svg viewBox="0 0 80 80"><path d="M26 23c0-10 28-10 28 0v18c0 13-7 22-14 22s-14-9-14-22z"/><path d="M31 35h4m10 0h4M40 39v8m-6 5c4 3 8 3 12 0M14 25v-9h9m34 0h9v9M14 55v9h9m34 0h9v-9"/></svg><span class="scan-line"></span></div><span class="scan-point second"></span></div>
+      <div class="features"><span class="feature"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7h12v12H3zM15 11l6-3v10l-6-3M7 7l2-3h4l2 3"/></svg>Hai camera</span><span class="feature"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m1-15a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2"/></svg>Quản lý người dùng</span><span class="feature"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 3h11v18H5V6m3-3v5H3m6 4h6m-6 4h6"/></svg>Nhật ký nhận diện</span></div>
+    </section>
+    <section class="form-panel" aria-labelledby="login-title">
+      <p class="eyebrow">Không gian quản trị</p>
+      <h2 id="login-title">Đăng nhập</h2>
+      <p class="intro">Sử dụng tài khoản quản trị để truy cập Smart Access.</p>
+      {% if error %}
+      <div class="error" role="alert"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg><span>{{ error }}</span></div>
+      {% endif %}
+      <form action="/login" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="field"><label for="username">Tên đăng nhập</label><div class="input-wrap"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><input id="username" type="text" name="username" autocomplete="username" placeholder="Nhập tên đăng nhập" required autofocus></div></div>
+        <div class="field"><label for="password">Mật khẩu</label><div class="input-wrap"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg><input id="password" type="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required></div></div>
+        <button class="submit" type="submit">Đăng nhập<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button>
+      </form>
+      <p class="security-note"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>Chỉ dành cho người được cấp quyền quản trị.</p>
+      <div class="footer">Smart Access · Hệ thống nhận diện khuôn mặt</div>
+    </section>
+  </main>
+</body>
+</html>

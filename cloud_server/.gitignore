@@ -1,0 +1,13 @@
+captures/
+archive/
+avatars/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+.DS_Store
