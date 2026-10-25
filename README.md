@@ -6,7 +6,7 @@ Dự án kết hợp firmware nhúng, giao tiếp không dây và thị giác m�
 
 ESP32-S3 là bộ điều khiển chính, ESP32-CAM bổ sung góc chụp thứ hai. Việc phát hiện và đối chiếu khuôn mặt chạy trên **server Python**, còn các bo ESP32 đảm nhiệm thu ảnh, giao tiếp và điều khiển phần cứng.
 
-[Kiến trúc](#kiến-trúc-hệ-thống) · [Chức năng](#chức-năng-chính) · [Công nghệ](#công-nghệ-sử-dụng) · [Cách chạy](#hướng-dẫn-chạy) · [Kiểm thử](#kiểm-thử)
+[Kiến trúc](#kiến-trúc-hệ-thống) · [Chức năng](#chức-năng-chính) · [Đấu nối](#đấu-nối-phần-cứng) · [Cách lấy IP](#31-lấy-ipv4-của-máy-chạy-server) · [Cách chạy](#hướng-dẫn-chạy) · [Kiểm thử](#kiểm-thử)
 
 ## Mục tiêu dự án
 
@@ -65,6 +65,83 @@ Các kiểm tra chất lượng ảnh gồm kích thước khuôn mặt, độ s
 | Giao diện | Jinja2, HTML, CSS, JavaScript |
 | Dữ liệu và kiểm thử | SQLite, Python `unittest`, kiểm thử trình duyệt bằng Chrome headless |
 
+## Đấu nối phần cứng
+
+Các bảng dưới đây đối chiếu trực tiếp với firmware hiện tại. **GPIO là số chân logic của từng bo**, không phải vị trí chân trên đầu cắm hoặc số chân cáp FPC. Master và Slave truyền dữ liệu không dây, không cần nối dây TX/RX giữa hai bo.
+
+GPIO dùng tín hiệu logic 3.3 V; không đưa tín hiệu 5 V vào GPIO. Điện áp cấp nguồn của bo/module phải theo nhãn và sơ đồ của đúng phiên bản phần cứng. Tham khảo giới hạn điện áp trong [datasheet ESP32-S3 của Espressif](https://documentation.espressif.com/esp32_s3_datasheet_en.pdf).
+
+### Camera OV5640 và OV3660
+
+Camera cắm qua đầu FPC của bo/module tương ứng. Bảng này mô tả **ánh xạ tín hiệu camera trong code**, không phải thứ tự chân FPC để tự đấu một cảm biến rời. Nguồn và GND camera đi theo thiết kế module/đầu cắm; firmware không xác định điện áp cấp cho camera.
+
+| Tín hiệu camera | ESP32-S3 Master / OV5640 | ESP32-CAM Slave / OV3660 |
+| --- | --- | --- |
+| D0 / Y2 | GPIO11 | GPIO5 |
+| D1 / Y3 | GPIO9 | GPIO18 |
+| D2 / Y4 | GPIO8 | GPIO19 |
+| D3 / Y5 | GPIO10 | GPIO21 |
+| D4 / Y6 | GPIO12 | GPIO36 |
+| D5 / Y7 | GPIO18 | GPIO39 |
+| D6 / Y8 | GPIO17 | GPIO34 |
+| D7 / Y9 | GPIO16 | GPIO35 |
+| XCLK | GPIO15 | GPIO0 |
+| PCLK | GPIO13 | GPIO22 |
+| VSYNC | GPIO6 | GPIO25 |
+| HREF | GPIO7 | GPIO23 |
+| SIOD / SDA của SCCB | GPIO4 | GPIO26 |
+| SIOC / SCL của SCCB | GPIO5 | GPIO27 |
+| PWDN | Không điều khiển bằng GPIO (`-1`) | GPIO32 |
+| RESET | Không điều khiển bằng GPIO (`-1`) | Không điều khiển bằng GPIO (`-1`) |
+
+Nếu đổi bo hoặc đổi cách nối camera, sửa các macro `*_GPIO_NUM` trong [Master main.c](master_esp32s3/main/main.c) hoặc [Slave main.c](slave_esp32cam/main/main.c), rồi build/nạp lại bo tương ứng. Giá trị `-1` chỉ có nghĩa driver không điều khiển chân đó; mạch camera vẫn phải có trạng thái nguồn/reset đúng theo thiết kế module.
+
+### Màn hình ST7789 240 × 240 nối với Master
+
+| Chân trên module ST7789 | Nối tới ESP32-S3 | Chức năng |
+| --- | --- | --- |
+| SCL / SCK / CLK | GPIO39 | Xung SPI; chân SCL ở đây là clock SPI, không phải I²C |
+| SDA / MOSI / DIN | GPIO38 | Dữ liệu SPI từ Master tới màn hình |
+| CS | GPIO40 | Chọn màn hình |
+| DC / A0 | GPIO41 | Chọn dữ liệu hoặc lệnh |
+| RES / RST | GPIO42 | Reset màn hình |
+| BL / BLK, ngõ điều khiển đèn nền | GPIO2 | HIGH bật đèn nền, LOW tắt |
+| GND | GND của Master | Mass chung |
+| VCC | Nguồn đúng định mức của module ST7789 | Không suy ra điện áp VCC chỉ từ tên ST7789 |
+
+Driver hiện tại không sử dụng MISO. Nếu BL/BLK là chân cấp dòng trực tiếp cho LED thay vì ngõ điều khiển, cần mạch đệm/transistor phù hợp; GPIO2 chỉ đảm nhiệm tín hiệu điều khiển. Các chân được khai báo trong [display_st7789.h](master_esp32s3/main/display_st7789.h).
+
+### PIR, relay và XY-MOS nối với Master
+
+| Linh kiện / chân | Nối tới | Ghi chú |
+| --- | --- | --- |
+| PIR HC-SR501 / OUT | GPIO14 | Firmware đọc HIGH khi phát hiện chuyển động; ngõ OUT phải tương thích 3.3 V |
+| PIR / VCC | Nguồn theo định mức module PIR | Xác định VCC theo nhãn, không theo thứ tự chân nhìn từ một ảnh module khác |
+| PIR / GND | GND của Master | Mass chung với tín hiệu OUT |
+| Module relay / IN | GPIO1 | Firmware hiện tại dùng HIGH để kích hoạt, LOW để nhả |
+| Module relay / VCC | Nguồn theo định mức module relay | Dùng module nhận tín hiệu điều khiển 3.3 V, hoặc có mạch đệm phù hợp |
+| Module relay / GND điều khiển | GND của Master | Không nối cuộn relay trực tiếp vào GPIO |
+| XY-MOS / TRIG hoặc PWM | GPIO21 | HIGH bật hai đèn, LOW tắt; kiểm tra GPIO21 có được đưa ra ngoài trên bo thực tế |
+| XY-MOS / GND tín hiệu | GND của Master | Chung mass với nguồn điều khiển/tải của module không cách ly |
+
+**Hai đèn 5 V qua XY-MOS:** dùng nguồn ngoài đủ dòng cho hai đèn. Nối cực dương/âm nguồn vào cặp **nguồn vào** của XY-MOS (`DC+`, `DC-` hoặc ký hiệu tương đương); nối hai cực dương đèn chung vào **OUT+**, hai cực âm đèn chung vào **OUT-**. Như vậy hai đèn mắc song song ở đầu ra module. Đối chiếu đúng ký hiệu trên phiên bản XY-MOS đang dùng; không cấp dòng cho hai đèn từ GPIO hoặc chân 3.3 V của ESP32.
+
+GPIO21 chỉ điều khiển ngõ TRIG/PWM tương thích mức 3.3 V. Cấu hình nằm trong [camera_light.h](master_esp32s3/main/camera_light.h). Với relay, chân **COM/NO/NC** thuộc mạch nguồn của khóa/tải; chọn NO hoặc NC theo loại khóa, tách biệt với chân tín hiệu IN.
+
+### USB-UART để nạp ESP32-CAM Slave
+
+Với bo AI-Thinker có chân nguồn 5V, sử dụng nguồn 5 V phù hợp và bộ USB-UART có **TX/RX mức logic 3.3 V**. Nguồn 5 V cấp vào chân 5V của bo, không cấp vào chân UART hay chân 3V3. Xem sơ đồ đầu cắm trong [datasheet ESP32-CAM của Ai-Thinker](https://datasheet.lcsc.com/lcsc/Ai-Thinker-ESP32-CAM_C277946.pdf).
+
+| Phía nguồn / USB-UART | Nối tới ESP32-CAM Slave |
+| --- | --- |
+| Nguồn 5 V / cực dương | Chân 5V của bo |
+| GND nguồn và GND USB-UART | GND của bo |
+| TXD, tín hiệu 3.3 V | U0R / RX0 / GPIO3 |
+| RXD, tín hiệu 3.3 V | U0T / TX0 / GPIO1 |
+| GND, chỉ khi vào chế độ nạp | GPIO0 |
+
+Khi nạp: nối GPIO0–GND rồi reset/cấp nguồn để vào bootloader. Sau khi nạp xong: **bỏ nối GPIO0–GND rồi reset lại**. GPIO0 còn là XCLK của camera Slave khi ứng dụng chạy. Nếu dùng ESP32-CAM-MB có mạch USB-UART tích hợp, thực hiện chế độ nạp/reset theo bo đó.
+
 ## Cấu trúc mã nguồn
 
 ```text
@@ -96,7 +173,7 @@ Các kiểm tra chất lượng ảnh gồm kích thước khuôn mặt, độ s
 - Máy tính chạy server Python 3.11 và môi trường ESP-IDF 5.5 để build/nạp firmware.
 - Hai bo kết nối cùng mạng Wi-Fi 2.4 GHz; server có địa chỉ LAN mà cả hai bo truy cập được qua cổng 8000.
 
-Các chân camera, TFT, PIR, relay và XY-MOS được khai báo trong [firmware Master](master_esp32s3/main/main.c), [driver ST7789](master_esp32s3/main/display_st7789.h), [driver đèn](master_esp32s3/main/camera_light.h) và [firmware Slave](slave_esp32cam/main/main.c). Kiểm tra các chân này theo bo thực tế trước khi nạp.
+Đấu các linh kiện theo mục [Đấu nối phần cứng](#đấu-nối-phần-cứng) và kiểm tra lại sơ đồ của đúng bo/module trước khi nạp.
 
 Các lệnh dưới đây dùng **PowerShell trên Windows**.
 
@@ -143,20 +220,73 @@ Trước khi đăng ký người dùng trên database mới, đặt `identity_al
 
 ### 3. Cấu hình mạng cho hai bo
 
-Tạo tệp **`project_network.local.h` tại thư mục gốc** của dự án:
+#### 3.1. Lấy IPv4 của máy chạy server
+
+**IP này lấy từ máy tính đang chạy `cloud_server/app.py`.** Trong mạng gia đình thông thường, router cấp địa chỉ này qua DHCP. GitHub chỉ lưu mã nguồn và không cấp địa chỉ server cho hai bo.
+
+Trên máy chạy server, mở **PowerShell hoặc Command Prompt** và chạy:
+
+```powershell
+ipconfig
+```
+
+Tìm adapter đang nối vào cùng mạng LAN với hai bo: **Wireless LAN adapter Wi-Fi** nếu dùng Wi-Fi, hoặc **Ethernet adapter Ethernet** nếu máy tính nối dây mạng. Lấy giá trị **IPv4 Address** trong adapter đó. Lệnh `ipconfig` hiển thị IPv4 và gateway của các adapter theo [hướng dẫn Microsoft](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/ipconfig).
+
+Ví dụ kết quả minh họa:
+
+```text
+Wireless LAN adapter Wi-Fi:
+   IPv4 Address. . . . . . . . . . . : 192.168.1.50
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.1.1
+```
+
+Trong ví dụ này, điền **`192.168.1.50`** vào firmware. Không lấy `192.168.1.1` ở dòng Default Gateway vì đó là router. Không chọn địa chỉ VPN/VirtualBox/VMware/WSL, adapter đã ngắt kết nối hoặc địa chỉ tự gán `169.254.x.x`.
+
+#### 3.2. Điền IP vào đúng tệp
+
+Từ **thư mục gốc của dự án** sau khi clone trên máy của bạn, tạo/mở tệp bằng:
+
+```powershell
+notepad .\project_network.local.h
+```
+
+Tệp nằm ngang hàng với `project_network.h`, `master_esp32s3/` và `slave_esp32cam/`; không đặt trong `cloud_server/` hay thư mục `main/`. Lưu đúng tên **`project_network.local.h`**, không có đuôi `.txt`.
+
+Điền thông tin của môi trường đang chạy:
 
 ```c
 #pragma once
 
 #define WIFI_SSID "YOUR_2_4_GHZ_WIFI"
 #define WIFI_PASS "YOUR_WIFI_PASSWORD"
-#define PROJECT_SERVER_HOST "192.168.1.100"
+#define PROJECT_SERVER_HOST "192.168.1.50"
 #define PROJECT_SERVER_PORT 8000
 ```
 
-Thay thông tin Wi-Fi và IP ví dụ bằng thông tin thực tế. `PROJECT_SERVER_HOST` là **IPv4 LAN của máy chạy server**, không dùng `localhost`, không thêm `http://`. Hai firmware cùng đọc cấu hình này qua `project_network.h`; cần build/nạp lại sau khi thay đổi.
+| Giá trị | Điền thông tin gì? |
+| --- | --- |
+| `WIFI_SSID` | Tên Wi-Fi 2.4 GHz mà hai bo sẽ kết nối |
+| `WIFI_PASS` | Mật khẩu của Wi-Fi đó |
+| `PROJECT_SERVER_HOST` | IPv4 vừa đọc trên máy chạy server; `192.168.1.50` chỉ là ví dụ |
+| `PROJECT_SERVER_PORT` | Giữ `8000` để khớp cổng đang cấu hình trong `cloud_server/app.py` |
 
-Giữ hai bo trên cùng kênh Wi-Fi để ESP-NOW liên lạc được. Cho phép kết nối từ mạng LAN tới cổng 8000 trên máy chạy server.
+Chỉ điền địa chỉ IP vào `PROJECT_SERVER_HOST`, **không thêm `http://`, `:8000` hay đường dẫn**. Không điền `localhost`, `127.0.0.1` hoặc `0.0.0.0`; hai bo cần địa chỉ LAN cụ thể để gọi server. Server dùng `0.0.0.0` để lắng nghe trên các giao diện mạng, không dùng giá trị đó làm địa chỉ đích.
+
+Hai firmware cùng đọc tệp này thông qua `project_network.h`, nên chỉ cần cấu hình mạng chung một lần. Giữ `project_network.h` làm bộ nạp cấu hình; mật khẩu thực tế đặt trong `project_network.local.h`, tệp đã được Git bỏ qua.
+
+#### 3.3. Kiểm tra kết nối và dùng trên máy khác
+
+Sau khi chạy server theo bước 2:
+
+1. Trên chính máy chạy server, mở `http://localhost:8000/health`.
+2. Trên điện thoại hoặc máy tính **khác cùng mạng LAN**, mở `http://192.168.1.50:8000/health`, thay IP ví dụ bằng IPv4 vừa lấy. Nếu truy cập được, thiết bị khác trong LAN đã gọi được server.
+3. Nếu bước 1 được nhưng bước 2 không được, kiểm tra đúng IP/adapter, cho phép Python hoặc TCP 8000 qua Windows Firewall trên mạng Private, và tránh Wi-Fi khách có tính năng chặn truy cập giữa các thiết bị. Không cần tắt toàn bộ firewall.
+4. Build và nạp lại **cả Master lẫn Slave** theo bước 4 để hai bo nhận cấu hình mới. Sửa tệp trên máy tính không tự cập nhật firmware đã nạp trên bo.
+
+Khi chuyển dự án sang máy khác: người chạy tự cài server, cấu hình `cloud_server/.env`, chạy `ipconfig` trên **máy server mới**, tạo `project_network.local.h` với thông tin Wi-Fi/IP của họ, rồi build/nạp lại hai bo. Không sao chép nguyên IP ví dụ hoặc IP của máy cũ. Nếu máy mới chỉ mở dashboard và server vẫn chạy trên máy cũ, tiếp tục dùng IP của máy cũ.
+
+Master và Slave được phép có **IP riêng khác nhau**; không cần điền IP của hai bo vào tệp trên. Cả hai phải truy cập được server, đồng thời cùng kênh Wi-Fi để ESP-NOW liên lạc được. Khi router đổi IP của máy server, đọc lại IP và cập nhật/nạp lại; có thể cấu hình DHCP reservation trên router để giữ IP server ổn định. Với thiết bị ở mạng khác, địa chỉ LAN này cần một giải pháp kết nối riêng như VPN.
 
 ### 4. Build và nạp firmware
 
